@@ -90,6 +90,7 @@ class MyApp:
         settings = self.ups.fetch_settings()
         dynamic_data = self.ups.fetch_dynamic_data()
         commands_data = self.ups.fetch_commands_data()
+        self.ups.close_connection()
         self.publish_data(asdict(self.inventory_data))
         self.publish_data(asdict(status_data))
         self.publish_data(asdict(settings))
