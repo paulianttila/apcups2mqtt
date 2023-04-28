@@ -50,7 +50,7 @@ class MyApp:
         self.inventory_data = None
 
     def get_version(self) -> str:
-        return "1.0.2"
+        return "1.0.3"
 
     def stop(self) -> None:
         self.logger.debug("Exit")
@@ -72,7 +72,7 @@ class MyApp:
             self.inventory_data = None
 
         try:
-            self.fetch_data_with_retry(try_count=3)
+            self.fetch_data_with_retry(tries=3)
         except Exception as e:
             self.fecth_errors_metric.inc()
             self.logger.error(f"Error occured: {e}")
@@ -85,15 +85,20 @@ class MyApp:
             True,
         )
 
-    def fetch_data_with_retry(self, try_count: int = 1):
-        for i in range(try_count):
+    def fetch_data_with_retry(self, tries: int = 1):
+        for i in range(tries):
             try:
                 self.fetch_data()
-                return
+                break
             except CommunicationError:
-                rndtime = randint(100, 500) / 1000  # 0.1 - 0.5s #  nosec
-                self.logger.debug(f"Communication error, retry {i+1} after {rndtime}s")
-                time.sleep(rndtime)
+                if i < tries - 1:
+                    rndtime = randint(100, 500) / 1000  # 0.1 - 0.5s #  nosec
+                    self.logger.debug(
+                        f"Communication error, retry {i+1} after {rndtime}s"
+                    )
+                    time.sleep(rndtime)
+                else:
+                    raise
 
     def fetch_data(self):
         if self.inventory_data is None:
