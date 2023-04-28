@@ -91,7 +91,7 @@ class MyApp:
                 self.fetch_data()
                 return
             except CommunicationError:
-                rndtime = randint(100, 500) / 1000
+                rndtime = randint(100, 500) / 1000 # 0.1 - 0.5s #  nosec
                 self.logger.debug(f"Communication error, retry {i+1} after {rndtime}s")
                 time.sleep(rndtime)
 
