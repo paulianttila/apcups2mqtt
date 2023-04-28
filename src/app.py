@@ -1,4 +1,6 @@
 from dataclasses import asdict
+from random import randint
+import time
 from mqtt_framework import Framework
 from mqtt_framework import Config
 from mqtt_framework.callbacks import Callbacks
@@ -10,6 +12,7 @@ from datetime import datetime
 
 from cacheout import Cache
 from apcups import ApcUps
+from apcups_data import CommunicationError
 
 
 class MyConfig(Config):
@@ -44,10 +47,10 @@ class MyApp:
         self.ups = ApcUps(
             self.config["APC_HOST"], self.config["APC_PORT"], logger=self.logger
         )
-        self.inventory_data_fetched = False
+        self.inventory_data = None
 
     def get_version(self) -> str:
-        return "1.0.0"
+        return "1.0.2"
 
     def stop(self) -> None:
         self.logger.debug("Exit")
@@ -66,9 +69,10 @@ class MyApp:
         self.logger.debug(f"Update called, trigger_source={trigger_source}")
         if trigger_source == trigger_source.MANUAL:
             self.valueCache.clear()
+            self.inventory_data = None
 
         try:
-            self.fetch_data()
+            self.fetch_data_with_retry(try_count=3)
         except Exception as e:
             self.fecth_errors_metric.inc()
             self.logger.error(f"Error occured: {e}")
@@ -81,8 +85,18 @@ class MyApp:
             True,
         )
 
+    def fetch_data_with_retry(self, try_count: int = 1):
+        for i in range(try_count):
+            try:
+                self.fetch_data()
+                return
+            except CommunicationError:
+                rndtime = randint(100, 500) / 1000  # 0.1 - 0.5s #  nosec
+                self.logger.debug(f"Communication error, retry {i+1} after {rndtime}s")
+                time.sleep(rndtime)
+
     def fetch_data(self):
-        if self.inventory_data_fetched is False:
+        if self.inventory_data is None:
             self.inventory_data = self.ups.fetch_inventory_data()
             self.inventory_data.serial_number
 
