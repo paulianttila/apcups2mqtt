@@ -16,9 +16,9 @@ See common environment variables from [MQTT-Framework](https://github.com/paulia
 | **Variable**               | **Default** | **Descrition**                                                                                                |
 |----------------------------|-------------|---------------------------------------------------------------------------------------------------------------|
 | CFG_APP_NAME               | apcups2mqtt | Name of the app.                                                                                              |
-| APC_HOST                   | None        | APC UPS to connect.                                                                                           |
-| APC_PORT                   | 502         | TCP port to connect.                                                                                          |
-| CACHE_TIME                 | 300         | Cache time in seconds for UPS values. During cache time, values are only updeted to MQTT if value changed.    |
+| CFG_APC_HOST               | None        | APC UPS to connect.                                                                                           |
+| CFG_APC_PORT               | 502         | TCP port to connect.                                                                                          |
+| CFG_CACHE_TIME             | 300         | Cache time in seconds for UPS values. During cache time, values are only updeted to MQTT if value changed.    |
 
 ## Example docker-compose.yaml
 
@@ -34,7 +34,7 @@ services:
       - CFG_LOG_LEVEL=DEBUG
       - CFG_MQTT_BROKER_URL=127.0.0.1
       - CFG_MQTT_BROKER_PORT=1883
-      - APC_HOST=192.168.10.2
+      - CFG_APC_HOST=192.168.10.2
       - CFG_CACHE_TIME=300
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/healthy"]
